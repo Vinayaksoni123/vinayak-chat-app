@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* hide scrolling for chrome safari opera */
+::-webkit-scrollbar {
+    display: none;
+}
+
+body{
+    -ms-overflow-style:none;
+    scrollbar-width: none;
+}
