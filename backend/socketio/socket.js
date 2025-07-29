@@ -5,7 +5,10 @@ let app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://vinayak-chat-app-1.onrender.com",
+    origin: [
+      "https://skype-v.onrender.com",
+      "https://vinayak-chat-app-1.onrender.com",
+    ],
   },
 });
 const userSocketMap = {};
