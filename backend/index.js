@@ -11,12 +11,23 @@ dotenv.config();
 
 const port = process.env.PORT || 5000;
 // const app = express();
-app.use(
-  cors({
-    origin: "https://vinayak-chat-app-1.onrender.com",
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: "https://vinayak-chat-app-1.onrender.com",
+//     credentials: true,
+//   })
+// );
+
+// Example for Express.js
+const corsOptions = {
+  origin: [
+    "https://skype-v.onrender.com",
+    "https://vinayak-chat-app-1.onrender.com",
+  ],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/auth", router);
