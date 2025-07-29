@@ -11,12 +11,22 @@ dotenv.config();
 
 const port = process.env.PORT || 5000;
 // const app = express();
-app.use(
-  cors({
-    origin: "https://vinayak-chat-app-1.onrender.com",
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: "https://vinayak-chat-app-1.onrender.com",
+//     credentials: true,
+//   })
+// );
+
+// Configure CORS to allow your frontend origin
+const corsOptions = {
+  origin: "https://vinayak-chat-app-1.onrender.com",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // if using cookies/sessions
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
