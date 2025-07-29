@@ -13,8 +13,8 @@ function Login() {
   const navigate = useNavigate();
   const [loading, setloading] = useState(false);
   let dispatch = useDispatch();
-  // let { userdata } = useSelector((state) => state.user);
-  // console.log(userdata);
+  let { userdata } = useSelector((state) => state.user);
+  console.log(userdata);
   const {
     register,
     handleSubmit,
