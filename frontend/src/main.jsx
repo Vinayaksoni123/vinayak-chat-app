@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { store } from "./redux/store.js";
 import { ToastContainer, toast } from "react-toastify";
-export const serverUrl = "https://vinayak-chat-app.onrender.com/";
+export const serverUrl = "https://vinayak-chat-app.onrender.com";
 import "react-toastify/dist/ReactToastify.css";
 
 createRoot(document.getElementById("root")).render(
