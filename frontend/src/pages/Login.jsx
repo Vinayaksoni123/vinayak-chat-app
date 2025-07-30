@@ -42,7 +42,7 @@ function Login() {
       setloading(false);
       // navigate("/");
       alert("You are loged in successfully...");
-      window.location.reload();
+      // window.location.reload();
       // toast.success("Login Succesfully");
     } catch (error) {
       setloading(false);
