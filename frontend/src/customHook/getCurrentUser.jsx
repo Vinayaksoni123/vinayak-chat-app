@@ -21,7 +21,7 @@ const getCurrentUser = () => {
       }
     };
     fetchUser();
-  }, [userdata]);
+  }, []);
 };
 
 export default getCurrentUser;
