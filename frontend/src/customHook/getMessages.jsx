@@ -40,31 +40,47 @@ import { toast } from "react-toastify";
 
 const getMessages = () => {
   const dispatch = useDispatch();
-  const { selecteduser, userdata } = useSelector((state) => state.user);
+  const { selecteduser } = useSelector((state) => state.user);
+  const [retryCount, setRetryCount] = React.useState(0);
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      // Skip if no user selected
-      if (!selecteduser?._id) {
-        dispatch(setmessages([]));
-        return;
-      }
+    // Skip if no user selected
+    if (!selecteduser?._id) {
+      dispatch(setmessages([]));
+      return;
+    }
 
+    const controller = new AbortController();
+    let isMounted = true;
+
+    const fetchMessages = async (attempt = 1) => {
       try {
         const response = await axios.get(
           `${serverUrl}/api/message/get/${selecteduser._id}`,
-          { withCredentials: true }
+          {
+            withCredentials: true,
+            signal: controller.signal
+          }
         );
+
+        if (!isMounted) return;
 
         if (response.data?.success) {
           dispatch(setmessages(response.data.messages || []));
+          setRetryCount(0); // Reset retry count on success
         } else {
           handleErrorResponse(response.data);
           dispatch(setmessages([]));
         }
       } catch (error) {
-        handleApiError(error);
-        dispatch(setmessages([]));
+        if (!isMounted) return;
+
+        if (axios.isCancel(error)) {
+          console.log("Request canceled:", error.message);
+          return;
+        }
+
+        handleApiError(error, attempt);
       }
     };
 
@@ -76,12 +92,25 @@ const getMessages = () => {
         case "USER_NOT_FOUND":
           toast.error("User not found");
           break;
+        case "UNAUTHORIZED":
+          toast.error("Please login again");
+          // Optionally redirect to login
+          break;
         default:
           toast.error(errorData?.message || "Failed to load messages");
       }
     };
 
-    const handleApiError = (error) => {
+    const handleApiError = (error, attempt) => {
+      // Server errors (500) - implement retry logic
+      if (error.response?.status >= 500 && attempt < 3) {
+        const delay = attempt * 1000; // Exponential backoff
+        console.warn(`Retrying in ${delay}ms... (Attempt ${attempt})`);
+        setTimeout(() => fetchMessages(attempt + 1), delay);
+        setRetryCount(attempt);
+        return;
+      }
+
       if (error.response) {
         // Server responded with error status
         handleErrorResponse(error.response.data);
@@ -92,16 +121,26 @@ const getMessages = () => {
         // Other errors
         toast.error("Error loading messages");
       }
-      console.error("Message fetch error:", error);
+
+      console.error("Message fetch error:", {
+        error: error.message,
+        config: error.config,
+        response: error.response?.data
+      });
+
+      dispatch(setmessages([]));
     };
 
     fetchMessages();
 
-  }, [selecteduser, userdata, dispatch]);
-};
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [selecteduser?._id, dispatch, retryCount]);
 
-export default getMessages;
-  }, [selecteduser, userdata, dispatch]);
+  // Optional: Show loading state based on retryCount
+  return null;
 };
 
 export default getMessages;
