@@ -63,7 +63,9 @@ export const sendmessage = async (req, res) => {
 export const getMessages = async (req, res) => {
   try {
     const sender = req.userid;
-    const { receiver } = req.params;
+    const { receiver } = req.params();
+
+    console.log("after id");
 
     // Validate receiver ID
     if (!mongoose.isValidObjectId(receiver)) {
