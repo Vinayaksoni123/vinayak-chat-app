@@ -32,57 +32,75 @@
 
 // new code
 import axios from "axios";
-import React from "react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setmessages } from "../redux/messageSlice.js";
 import { serverUrl } from "../main.jsx";
+import { toast } from "react-toastify";
 
 const getMessages = () => {
-  let dispatch = useDispatch();
-  let { selecteduser, userdata } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const { selecteduser, userdata } = useSelector((state) => state.user);
 
   useEffect(() => {
     const fetchMessages = async () => {
-      // Don't try to fetch if no user is selected
+      // Skip if no user selected
       if (!selecteduser?._id) {
         dispatch(setmessages([]));
         return;
       }
 
       try {
-        let result = await axios.get(
+        const response = await axios.get(
           `${serverUrl}/api/message/get/${selecteduser._id}`,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
 
-        // Check if response has data
-        if (result.data) {
-          dispatch(setmessages(result.data.messages || []));
+        if (response.data?.success) {
+          dispatch(setmessages(response.data.messages || []));
         } else {
-          console.log("No messages found");
+          handleErrorResponse(response.data);
           dispatch(setmessages([]));
         }
       } catch (error) {
-        console.log("Error fetching messages:", error);
-        
-        // Handle specific error cases
-        if (error.response) {
-          if (error.response.data?.code === "USER_NOT_FOUND") {
-            console.log("Selected user not found");
-          } else if (error.response.data?.code === "INVALID_ID") {
-            console.log("Invalid user ID format");
-          }
-        }
-        
+        handleApiError(error);
         dispatch(setmessages([]));
       }
     };
 
+    const handleErrorResponse = (errorData) => {
+      switch (errorData?.code) {
+        case "INVALID_ID":
+          toast.error("Invalid user selected");
+          break;
+        case "USER_NOT_FOUND":
+          toast.error("User not found");
+          break;
+        default:
+          toast.error(errorData?.message || "Failed to load messages");
+      }
+    };
+
+    const handleApiError = (error) => {
+      if (error.response) {
+        // Server responded with error status
+        handleErrorResponse(error.response.data);
+      } else if (error.request) {
+        // Request was made but no response
+        toast.error("Network error - please check your connection");
+      } else {
+        // Other errors
+        toast.error("Error loading messages");
+      }
+      console.error("Message fetch error:", error);
+    };
+
     fetchMessages();
 
+  }, [selecteduser, userdata, dispatch]);
+};
+
+export default getMessages;
   }, [selecteduser, userdata, dispatch]);
 };
 
