@@ -65,51 +65,45 @@ export const getMessages = async (req, res) => {
     const sender = req.userid;
     const { receiver } = req.params;
 
-    // Validate receiver ID format
-    if (!mongoose.Types.ObjectId.isValid(receiver)) {
+    // Validate receiver ID
+    if (!mongoose.isValidObjectId(receiver)) {
       return res.status(400).json({ 
         success: false,
-        message: "Invalid user ID format",
+        message: "Invalid user ID",
         code: "INVALID_ID"
       });
     }
 
-    // Check if receiver exists
-    const receiverUser = await User.findById(receiver);
-    if (!receiverUser) {
-      return res.status(404).json({ 
+    // Verify receiver exists
+    const receiverExists = await User.exists({ _id: receiver });
+    if (!receiverExists) {
+      return res.status(404).json({
         success: false,
         message: "User not found",
         code: "USER_NOT_FOUND"
       });
     }
 
-    // Find conversation or create new if doesn't exist
-    let conversation = await Conversation.findOneAndUpdate(
-      { participants: { $all: [sender, receiver] } },
-      { $setOnInsert: { participants: [sender, receiver], message: [] } },
-      { 
-        new: true,
-        upsert: true,
-        populate: {
-          path: "message",
-          options: { sort: { createdAt: -1 } } // Sort by newest first
-        }
-      }
-    );
+    // Find or create conversation
+    const conversation = await Conversation.findOne({
+      participants: { $all: [sender, receiver] }
+    }).populate({
+      path: "message",
+      options: { sort: { createdAt: -1 } }
+    });
 
     return res.status(200).json({
       success: true,
-      messages: conversation.message || [],
-      participants: conversation.participants
+      messages: conversation?.message || []
     });
 
   } catch (error) {
-    console.error("GetMessages error:", error);
-    return res.status(500).json({ 
+    console.error("Server error in getMessages:", error);
+    return res.status(500).json({
       success: false,
       message: "Internal server error",
-      code: "SERVER_ERROR"
+      code: "SERVER_ERROR",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
