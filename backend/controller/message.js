@@ -43,95 +43,18 @@ export const sendmessage = async (req, res) => {
   }
 };
 
-// export const getMessages = async (req, res) => {
-//   try {
-//     let sender = req.userid;
-//     let { receiver } = req.params;
-//     let conversation = await Conversation.findOne({
-//       participants: { $all: [sender, receiver] },
-//     }).populate("message");
-//     if (!conversation) {
-//       return res.status(400).json({ message: "conversation not found" });
-//     }
-//     return res.status(200).json(conversation?.message);
-//   } catch (error) {
-//     return res.status(500).json({ message: "getmessage error " });
-//   }
-// };
-
-// new code
-import mongoose from "mongoose";
-import Conversation from "../models/conversation.model.js";
-import User from "../models/user.model.js";
-
 export const getMessages = async (req, res) => {
   try {
-    // Validate user authentication
-    if (!req.userid) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized - Please login first",
-        code: "UNAUTHORIZED"
-      });
+    let sender = req.userid;
+    let { receiver } = req.params;
+    let conversation = await Conversation.findOne({
+      participants: { $all: [sender, receiver] },
+    }).populate("message");
+    if (!conversation) {
+      return res.status(400).json({ message: "conversation not found" });
     }
-
-    const { receiver } = req.params;
-
-    // Validate receiver ID format
-    if (!mongoose.Types.ObjectId.isValid(receiver)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID format",
-        code: "INVALID_ID"
-      });
-    }
-
-    // Check if receiver exists
-    const receiverExists = await User.findById(receiver).lean();
-    if (!receiverExists) {
-      return res.status(404).json({
-        success: false,
-        message: "Receiver user not found",
-        code: "USER_NOT_FOUND"
-      });
-    }
-
-    // Find conversation or create new if doesn't exist
-    const conversation = await Conversation.findOneAndUpdate(
-      { participants: { $all: [req.userid, receiver] } },
-      { $setOnInsert: { participants: [req.userid, receiver], message: [] } },
-      { 
-        new: true,
-        upsert: true,
-        populate: {
-          path: "message",
-          options: { sort: { createdAt: -1 } } // Newest messages first
-        }
-      }
-    );
-
-    return res.status(200).json({
-      success: true,
-      messages: conversation.message || [],
-      participants: conversation.participants
-    });
-
+    return res.status(200).json(conversation?.message);
   } catch (error) {
-    console.error("Server Error in getMessages:", {
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      code: "SERVER_ERROR",
-      // Only include error details in development
-      ...(process.env.NODE_ENV === 'development' && {
-        error: error.message,
-        stack: error.stack
-      })
-    });
+    return res.status(500).json({ message: "getmessage error " });
   }
 };
