@@ -93,7 +93,7 @@ function Messagearea() {
               />
             </div>
             <h1 className="text-gray-800 font-semibold text-[23px]">
-              {selecteduser?.name || "User"}
+              {selecteduser?.name || selecteduser?.username}
             </h1>
           </div>
           <div className="w-full h-[78%] flex flex-col py-[50px] px-[20px] overflow-auto gap-[20px] ">
