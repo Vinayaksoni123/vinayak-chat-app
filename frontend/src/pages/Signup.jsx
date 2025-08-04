@@ -40,8 +40,8 @@ function Signup() {
       toast("Signup successfully...");
     } catch (error) {
       setloading(false);
-      if (error.response) {
-        toast.error("Invailed user credential..");
+      if (error) {
+       toast.error(error.response.data.message);
         console.log(error);
       }
     }
