@@ -174,6 +174,7 @@ function Login() {
       
     } catch (error) {
       console.error("Login error:", error);
+      toast.error(error.response.data.message);
       
       let errorMessage = "Login failed. Please try again.";
       if (error.response) {
