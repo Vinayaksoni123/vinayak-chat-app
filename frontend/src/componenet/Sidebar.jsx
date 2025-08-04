@@ -105,7 +105,7 @@ function Sidebar() {
         <h1 className="text-white font-bold text-[25px] font-serif">Skype-V</h1>
         <div className="w-full flex justify-between items-center">
           <h1 className="text-gray-600 font-bold text-[25px]">
-            Hii, {userdata.name || "Dear.."}
+            Hii, {userdata.name || userdata.username}
           </h1>
           <div
             className="w-[60px] h-[60px] rounded-full overflow-hidden bg-white flex justify-center items-center shadow-gray-600 shadow-lg cursor-pointer"
