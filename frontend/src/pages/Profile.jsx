@@ -41,6 +41,7 @@ function Profile() {
       dispatch(setuserdata(result.data));
       toast("profile edited successfully..");
       navigate("/");
+      window.location.reload();
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
