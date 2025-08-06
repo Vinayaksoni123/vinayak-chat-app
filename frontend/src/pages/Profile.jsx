@@ -33,6 +33,7 @@ function Profile() {
       if (backendimage) {
         formdata.append("image", backendimage);
       }
+      console.log(formdata);
       let result = await axios.put(`${serverUrl}/api/user/profile`, formdata, {
         withCredentials: true,
       });
@@ -42,7 +43,7 @@ function Profile() {
       navigate("/");
     } catch (error) {
       console.log(error);
-      toast.error("Invailed profil credential..");
+      toast.error(error.response.data.message);
       setloading(false);
     }
   };
